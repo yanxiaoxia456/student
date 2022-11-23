@@ -2,52 +2,63 @@
 #include <stdlib.h>
 #include <string.h>
 #include <conio.h>
-#define max 100			//数组定义统一大小
+#include <windows.h>
+#define maxsize 100			//数组定义统一大小
+int  student_number	= 0;//全局变量，已记录的学生个数
 int g = 0;				//全局变量，为登录时输入密码次数
 struct user				//定义一个结构体，存储用户登录账号和密码，并初始化五个管理员的信息
 {
 	char username[20];
 	char password[20];
-} user[5] = { //管理员信息
-	{"chuan", "123"},
-	{"郝", "202008071505"},
-	{"晏", "200"},
-	{"李", "12345"},
-	{"霞", "1111"}};
+} user[3] = { //管理员信息
+	{"weiai", "123"},
+	{"hao", "202008071505"},
+	{"fdsfsd", "200"}
+};
 struct student //定义结构体，包含学生信息，并初始化五个学生的信息
 {
-	char num[max];	//学号
-	char name[max]; //姓名
+	char num[maxsize];	//学号
+	char name[maxsize]; //姓名
 	int age;		//年龄
-	char sex[max];	//性别
-    int class;      //班级
+	char sex[maxsize];	//性别
+    int st_class;      //班级
 	int thought;	//思想成绩
 	int academic;	//学业成绩
 	int style;		//文体成绩
 	int total;		//综测
-}a[max];	
-int  student_number	= 0;
+}a[maxsize];	
+void color(short x);//自定义函根据参数改变颜色 
 void read();
 void login();
 void main_menu();
-void input_record();
-void show_record();
-void search_record();
-void print_table();
+void my_input();
+void my_show();
+void my_search();
+void my_print();
 void search_by_num();
 void search_by_name();
-void change_record();
-void delete_record();
-void refresh();
-void save_record();
-void exit_record();
-void help();
+void my_change();
+void my_delete();
+void my_refresh();
+void my_save();
+void my_exit();
+void my_help();
 int main() //*主函数
 {
+	
+    color(1); 	
+	printf("蓝色\n");
     read();
 	login();	 //首先进行管理员登录
 	main_menu(); //登录成功后显示主界面
 	return 0;
+}
+void color(short x)	//自定义函根据参数改变颜色 
+{
+    if(x>=0 && x<=15)//参数在0-15的范围颜色
+    	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), x);	//只有一个参数，改变字体颜色 
+    else//默认的颜色白色
+    	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
 }
 void read()//从已有文件读数据
 {
@@ -57,7 +68,7 @@ void read()//从已有文件读数据
     while(feof(fp) == 0 )
     {
         fscanf(fp,"%20s%20s%5d%5s%5d%5d%5d%5d%5d\n",&a[student_number].num,&a[student_number].name,&a[student_number].age,
-        &a[student_number].sex,&a[student_number].class,&a[student_number].thought,
+        &a[student_number].sex,&a[student_number].st_class,&a[student_number].thought,
         &a[student_number].academic,&a[student_number].style,&a[student_number].total);
         student_number++;
     }   
@@ -73,23 +84,27 @@ void login() //登录函数，管理员使用该系统前需进行登录，定�
 	scanf("%s", id);
 	printf("请输入密码：");
 	scanf("%s", password);
-	for (i = 0; i < 5; i++) //遍历五个管理员的信息，如果输入的信息在初始化的信息中存在则登录成功
+	for (i = 0; i < 3; i++) //遍历五个管理员的信息，如果输入的信息在初始化的信息中存在则登录成功
 	{
-		for (j = 0; j != 10; j++)//for循环，对比账号名
+		// for (j = 0; j != 10; j++)//for循环，对比账号名		
+		// 	if (id[j] != user[i].username[j])  break;//有一个字符不对，则退出循环，此时j<20	
+		// if (j == 10 && (strcmp(password, user[i].password) == 0))
+		// {
+		// 	printf("登录成功!\n");
+		// 	system("cls"); //清屏函数
+		// 	main_menu();   //登录成功，打印主界面
+		// 	break;
+		// }
+        if ((strcmp(id, user[i].username) == 0) && (strcmp(password, user[i].password) == 0))
 		{
-			if (id[j] != user[i].username[j])//有一个字符不对，则退出循环
-				break;
-		}
-		if (j != 10 && (strcmp(password, user[i].password) == 0))
-		{
-			printf("登录成功!\n");
-			system("cls"); //清屏函数
+		 	printf("登录成功!\n");
+		 	system("cls"); //清屏函数
 			main_menu();   //登录成功，打印主界面
-			break;
+		    break;
 		}
 	}
     
-	if (i == 5) //遍历完一轮管理员信息，此时i=5且未找到符合的管理员信息，说明账号密码输入错误
+	if (i == 3) //遍历完一轮管理员信息，此时i=5且未找到符合的管理员信息，说明账号密码输入错误
 	{
 		system("cls");
 		printf("登录失败！\n\n");
@@ -127,30 +142,30 @@ void main_menu() //展示主菜单，并对用户的请求做出对应响应
 	printf("请输入你要执行的操作：");
 	scanf("%d", &x);
 	if (x == 1)
-		input_record(); //输入信息
+		my_input(); //输入信息
 	if (x == 2)
-		show_record(); //显示信息
+		my_show(); //显示信息
 	if (x == 3)
-		search_record(); //查询信息
+		my_search(); //查询信息
 	if (x == 4)
-		change_record(); //更新信息
+		my_change(); //更新信息
 	if (x == 5)
-		delete_record(); //删除信息
+		my_delete(); //删除信息
 	if (x == 6)
-		refresh(); //刷新
+		my_refresh(); //刷新
     if (x == 7)
-        save_record();
+        my_save();
     if (x == 8)
-        help();
+        my_help();
 	if (x == 9)
-		exit_record(); //退出
+		my_exit(); //退出
 	else
 	{
 		printf("输入错误，即将重新进入主界面\n");
 		main_menu();
 	}
 }
-void input_record() //功能一，输入学生信息
+void my_input() //功能一，输入学生信息
 {
     system("cls"); //清屏函数
     int i = student_number;
@@ -166,7 +181,7 @@ void input_record() //功能一，输入学生信息
         printf("\n请输入学生性别：(boy/girl)");
         scanf("%s",a[i].sex);
         printf("\n请输入学生班级：");
-        scanf("%d",&a[i].class);
+        scanf("%d",&a[i].st_class);
         printf("\n请输入学生思想成绩：");
         scanf("%d",&a[i].thought);
         printf("\n请输入学生学业成绩：");
@@ -185,23 +200,23 @@ void input_record() //功能一，输入学生信息
     getch();
 	main_menu();
 }
-void show_record() //功能二，显示学生信息
+void my_show() //功能二，显示学生信息
 {
     system("cls"); //清屏函数
     int i;
     
-    print_table();
+    my_print();
     for(i = 0; i < student_number ; i++)
     {
 
-        printf("|%15s|%15s|%5d|%5s|%5d|%5d|%5d|%5d|%5d|\n", a[i].num, a[i].name, a[i].age, a[i].sex, a[i].class ,a[i].thought, a[i].academic,
+        printf("|%15s|%15s|%5d|%5s|%5d|%5d|%5d|%5d|%5d|\n", a[i].num, a[i].name, a[i].age, a[i].sex, a[i].st_class ,a[i].thought, a[i].academic,
 			   a[i].style, a[i].total);
     }
     printf("显示完成,可按任意键回到主函数");
     getch();
 	main_menu();
 }
-void search_record() //功能三，查询学生
+void my_search() //功能三，查询学生
 {
 	system("cls"); //清屏函数
 	int n = 0, x = 0;
@@ -219,10 +234,10 @@ void search_record() //功能三，查询学生
 	else
 	{
 		printf("输入错误\n");
-		search_record(); //重新查询
+		my_search(); //重新查询
 	}
 }
-void print_table() //打印学生信息表格的表头函数
+void my_print() //打印学生信息表格的表头函数
 {
 	printf("+---------------+---------------+-----+-----+-----+-----+-----+-----+-----+\n");
 	printf("|    学号       |     姓名      | 年龄| 性别| 班级|思想 | 学业|文体 |综测 |\n");
@@ -233,7 +248,7 @@ void search_by_num() //查询学生信息函数的子函数——按学号查询
     system("cls");	//清屏函数
     int i;
     printf("请输入要查找的学号：");
-    char num1[max]; //用户输入学生学号
+    char num1[maxsize]; //用户输入学生学号
     scanf("%s", num1);
     for(i = 0; i < student_number; i++)
     {
@@ -242,8 +257,8 @@ void search_by_num() //查询学生信息函数的子函数——按学号查询
     if( i < student_number)
     {
         printf("找到了！\n");
-        print_table();
-        printf("|%15s|%15s|%5d|%5s|%5d|%5d|%5d|%5d|%5d|\n", a[i].num, a[i].name, a[i].age, a[i].sex,a[i].class, a[i].thought, a[i].academic,
+        my_print();
+        printf("|%15s|%15s|%5d|%5s|%5d|%5d|%5d|%5d|%5d|\n", a[i].num, a[i].name, a[i].age, a[i].sex,a[i].st_class, a[i].thought, a[i].academic,
 			   a[i].style, a[i].total);
     }
     else     printf("不存在这个学号的学生！\n\n");
@@ -257,14 +272,14 @@ void search_by_num() //查询学生信息函数的子函数——按学号查询
 	}
 	else
 	{
-		search_record();
+		my_search();
 	}
 }
 void search_by_name() //询学生信息函数的子函数——按姓名查询函数
 {
     system("cls");	//清屏函数
     printf("请输入查找的的学生姓名");
-    char name1[max];
+    char name1[maxsize];
     int i;
     scanf("%s",name1);
     for(i = 0; i < student_number; i++)
@@ -274,8 +289,8 @@ void search_by_name() //询学生信息函数的子函数——按姓名查询�
     if( i < student_number )
     {
         printf("找到了！\n");
-        print_table();
-        printf("|%15s|%15s|%5d|%5s|%5d|%5d|%5d|%5d|%5d|1\n", a[i].num, a[i].name, a[i].age, a[i].sex,a[i].class, a[i].thought, a[i].academic,
+        my_print();
+        printf("|%15s|%15s|%5d|%5s|%5d|%5d|%5d|%5d|%5d|1\n", a[i].num, a[i].name, a[i].age, a[i].sex,a[i].st_class, a[i].thought, a[i].academic,
 			   a[i].style, a[i].total);
     }
     else     printf("不存在这个学号的学生！\n\n");
@@ -289,15 +304,15 @@ void search_by_name() //询学生信息函数的子函数——按姓名查询�
 	}
 	else
 	{
-		search_record();
+		my_search();
 	}
 }
-void change_record() //功能四，修改学生信息
+void my_change() //功能四，修改学生信息
 {
 	//输入学生学号修改学生信息并保持
 	system("cls"); //清屏函数
 	int i = 0,x = 0;//n为信息条数
-    char number[max];
+    char number[maxsize];
     printf("请输入要修改的学生的学号：\n"); //用户输入学生学号
     scanf("%s", number);
     for(i=0; i < student_number ; i++)
@@ -307,8 +322,8 @@ void change_record() //功能四，修改学生信息
     if( i < student_number)//修改信息
     {
         printf("修改前：\n");
-        print_table();
-        printf("|%15s|%15s|%5d|%5s|%5d|%5d|%5d|%5d|%5d|\n", a[i].num, a[i].name, a[i].age, a[i].sex, a[i].class, a[i].thought, 
+        my_print();
+        printf("|%15s|%15s|%5d|%5s|%5d|%5d|%5d|%5d|%5d|\n", a[i].num, a[i].name, a[i].age, a[i].sex, a[i].st_class, a[i].thought, 
         a[i].academic, a[i].style, a[i].total);
         printf("\n请输入修改后的信息:\n");
         printf("\n请输入学生姓名：");
@@ -318,7 +333,7 @@ void change_record() //功能四，修改学生信息
         printf("\n请输入学生性别(boy/girl)：");
         scanf("%s",a[i].sex);
         printf("\n请输入学生班级：");
-        scanf("%d",&a[i].class);
+        scanf("%d",&a[i].st_class);
         printf("\n请输入学生思想成绩：");
         scanf("%d",&a[i].thought);
         printf("\n请输入学生学业成绩：");
@@ -336,14 +351,14 @@ void change_record() //功能四，修改学生信息
     printf("1 回到首页\n");
 	printf("2 重新输入所要修改的学生学号\n");
 	scanf("%d", &x);
-	if (x == 2)     change_record();
+	if (x == 2)     my_change();
 	else main_menu();
 }
-void delete_record() //功能五，删除所选学生信息
+void my_delete() //功能五，删除所选学生信息
 {
 	//输入学生学号删除学生信息并保存
 	system("cls");
-	char number[max];
+	char number[maxsize];
     int i = 0;
     printf("请输入要修改的学生的学号：\n"); //用户输入学生学号
     scanf("%s", number);
@@ -360,7 +375,7 @@ void delete_record() //功能五，删除所选学生信息
                 strcpy(a[j].name, a[j + 1].name);
                 strcpy(a[j].sex, a[j + 1].sex);
                 a[j].age = a[j + 1].age;
-                a[j].class = a[j + 1].class;
+                a[j].st_class = a[j + 1].st_class;
                 a[j].thought = a[j + 1].thought;
                 a[j].academic = a[j + 1].academic;
                 a[j].style = a[j + 1].style;
@@ -378,10 +393,10 @@ void delete_record() //功能五，删除所选学生信息
     printf("1 回到首页\n");
 	printf("2 重新输入所要删除的学生学号\n");
 	scanf("%d", &x);
-	if (x == 2)     delete_record();
+	if (x == 2)     my_delete();
 	else main_menu();
 }
-void refresh()//功能六，删除所有学生信息。
+void my_refresh()//功能六，删除所有学生信息。
 {
 	system("cls"); //清屏函数
 	printf("确定要清除所有数据吗？\n");
@@ -397,7 +412,7 @@ void refresh()//功能六，删除所有学生信息。
             strcpy(a[j].name, "");
             strcpy(a[j].sex, "");
             a[j].age = 0;
-            a[j].class = 0;
+            a[j].st_class = 0;
             a[j].thought = 0;
             a[j].academic = 0;
             a[j].style = 0;
@@ -411,7 +426,7 @@ void refresh()//功能六，删除所有学生信息。
 	else     main_menu();
 
 }
-void save_record()//功能七，保存学生信息
+void my_save()//功能七，保存学生信息
 {
     system("cls"); //清屏函数
     FILE *fp = NULL;//修改信息
@@ -420,7 +435,7 @@ void save_record()//功能七，保存学生信息
     int i = 0;
     for(i = 0; i < student_number ; i++)
     {   
-        fprintf(fp,"%-20s%-20s%-5d%-5s%-5d%-5d%-5d%-5d%-5d\n",a[i].num, a[i].name, a[i].age, a[i].sex, a[i].class, a[i].thought, 
+        fprintf(fp,"%-20s%-20s%-5d%-5s%-5d%-5d%-5d%-5d%-5d\n",a[i].num, a[i].name, a[i].age, a[i].sex, a[i].st_class, a[i].thought, 
         a[i].academic, a[i].style, a[i].total);
     }
     fclose(fp);
@@ -429,18 +444,18 @@ void save_record()//功能七，保存学生信息
     getch();
 	main_menu();
 }   
-void help()//功能八，帮助
+void my_help()//功能八，帮助
 {
     system("cls"); //清屏函数
     printf("关于此小程序的介绍：\n");
     printf("功能概述：\n");
-    printf("查询学生信息;添加学生信息;修改学生信息;删除学生信息;刷新学生信息;保存学生信息;输出当前学生信息\n");
-    printf("关于此程序源代码，已开源在github上，账号为\n");
+    printf("查询、添加、修改、删除、刷新、保存、输出当前学生信息\n");
+    printf("关于此程序源代码，已开源在github上，账号为:yanxiaoxia456\n");
     printf("可按任意键回到主函数");
     getch();
 	main_menu();
 }
-void exit_record() //功能九，退出程序
+void my_exit() //功能九，退出程序
 {
 	printf("感谢您的使用，已退出！");
 	exit(0);
